@@ -13,24 +13,17 @@ namespace programmersdigest.MT940Parser.Parsing
 
         public StatementParser(StreamReader reader)
         {
-            if (reader == null)
-            {
-                throw new ArgumentNullException(nameof(reader));
-            }
-
-            _reader = reader;
+            _reader = reader ?? throw new ArgumentNullException(nameof(reader));
         }
 
         public Statement ReadStatement()
         {
             var statement = new Statement();
 
-            _reader.Find(":20:");
+            _reader.Find(":20:");//it was bad idea to search for \r\n:20: - not all files have \r\n as end of line and first row can be exactly :20: field but not the other, so I search for field names and trim the values
             if (_reader.EndOfStream)
             {
-                
-                    return null;
-                
+                return null;
             }
 
             ReadTransactionReferenceNumber(ref statement);
@@ -85,10 +78,7 @@ namespace programmersdigest.MT940Parser.Parsing
                     break;
                 default:
                     throw new InvalidDataException("The statement data ended unexpectedly. Expected field :25: to be followed by :28C: or :13D:");
-                    
             }
-
-
         }
 
         private void ReadStatementNumber(ref Statement statement)
@@ -97,7 +87,7 @@ namespace programmersdigest.MT940Parser.Parsing
 
             switch (nextKey)
             {
-                
+
                 case ":60F:":
                     ReadOpeningBalance(ref statement, BalanceType.Opening);
                     break;
@@ -110,11 +100,11 @@ namespace programmersdigest.MT940Parser.Parsing
                 default:
                     throw new InvalidDataException("The statement data ended unexpectedly. Expected field :28C: to be followed by :60F: or :60M:");
             }
-            
+
             statement.StatementNumber = value;
         }
 
- 
+
         private void ReadOpeningBalance(ref Statement statement, BalanceType balanceType)
         {
             var value = _reader.ReadTo(out var nextKey, ":61:", ":62F:", ":62M:").Trim();
@@ -138,7 +128,7 @@ namespace programmersdigest.MT940Parser.Parsing
 
         private void ReadStatementLine(ref Statement statement)
         {
-            var value = _reader.ReadTo(out var nextKey,  ":62F:", ":62M:", ":86:").Trim();
+            var value = _reader.ReadTo(out var nextKey, ":62F:", ":62M:", ":86:").Trim();
 
             // Check the format and parse the statement line to keep correct line ordering.
             // If we were to parse the line after the switch, lines would be in reversed order.
@@ -152,7 +142,7 @@ namespace programmersdigest.MT940Parser.Parsing
 
             switch (nextKey)
             {
-                
+
                 case ":62F:":
                     ReadClosingBalance(ref statement, BalanceType.Closing);
                     break;
@@ -170,7 +160,7 @@ namespace programmersdigest.MT940Parser.Parsing
         private void ReadLineInformationToOwner(ref Statement statement)
         {
             var value = _reader.ReadTo(out var nextKey, ":61:", ":62F:", ":62M:").Trim();
-           
+
 
             var lastLine = statement.Lines.LastOrDefault();
             if (lastLine == null)
@@ -191,11 +181,9 @@ namespace programmersdigest.MT940Parser.Parsing
                 case ":62M:":
                     ReadClosingBalance(ref statement, BalanceType.Intermediate);
                     break;
-               
                 default:
                     break;
-               
-                    //throw new InvalidDataException("The statement data ended unexpectedly. Expected field :86: to be followed by :61:, :62F: or :62M:");
+                    //it's ok if the file does not contain saldo balance info and ends on :86: field without - as termination symbol  
             }
         }
 
@@ -216,8 +204,7 @@ namespace programmersdigest.MT940Parser.Parsing
                 case "-":
                 default:
                     break;      // End of statement
-                
-                    //throw new InvalidDataException("The statement data ended unexpectedly. Expected field :62a: to be followed by :64:, :65:, :86: or the end of the statement");
+                    //it's ok if field :62a: is not followed by :64:, :65:, :86: but comes to an end or - as termination symbol   
             }
 
             statement.ClosingBalance = _balanceParser.ReadBalance(value, balanceType);
@@ -237,8 +224,7 @@ namespace programmersdigest.MT940Parser.Parsing
                 case "-":
                 default:
                     break;      // End of statement
-                
-                    //throw new InvalidDataException("The statement data ended unexpectedly. Expected field :64: to be followed by :65:, :86: or the end of the statement");
+                    //it's ok if field :64: is not followed by :65:, :86: but comes to an end or - as termination symbol
             }
 
             statement.ClosingAvailableBalance = _balanceParser.ReadBalance(value, BalanceType.None);
@@ -266,8 +252,7 @@ namespace programmersdigest.MT940Parser.Parsing
                 case "-":
                 default:
                     break;      // End of statement
-                
-                    //throw new InvalidDataException("The statement data ended unexpectedly. Expected field :65: to be followed by :65:, :86: or the end of the statement");
+                    //it's ok if field :65: to be followed by :65:, :86: but comes to an end or - as termination symbol
             }
         }
 
