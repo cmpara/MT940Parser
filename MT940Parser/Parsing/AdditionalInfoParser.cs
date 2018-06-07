@@ -10,7 +10,7 @@ namespace programmersdigest.MT940Parser.Parsing
         private char _separator;
         private string _lastRemittanceIdentifier;
 
-
+        //erase all multi whitespace characters
         Regex regex = new Regex("[ ]{2,}", RegexOptions.None);
 
         public Information ParseInformation(string value)
@@ -40,42 +40,32 @@ namespace programmersdigest.MT940Parser.Parsing
             {
                 information.TransactionCode = int.Parse(value);
             }
-
-
-
-
         }
 
         private void ReadStructuredData(ref Information information)
         {
             //remove all new line symbols
             ReadTransactionCode(ref information);
-            information.IsUnstructuredData = false;
+
             var value = _reader.Read();
             value = value.Replace("\r", "").Replace("\n", "").Replace("\t", "");
             _reader = new StringReader(value);
 
             DetectSeparator(ref information);
-
         }
 
-        private void ReadUnstructuredData(ref Information information)
-        {
-            information.IsUnstructuredData = true;
-            information.UnstructuredData = _reader.Read();
-        }
 
         private void DetectSeparator(ref Information information)
         {
-            var value = _reader.ReadWhile(c=> char.IsPunctuation(c) || char.IsSymbol(c), 1);
+            var value = _reader.ReadWhile(c => char.IsPunctuation(c) || char.IsSymbol(c), 1);
             if (value.Length < 1)
             {
-                //throw new InvalidDataException("Unexpected end of statement. Expected \"Separator\"");
+                _separator = '\n';
                 information.OperationDescription += ReadValue();
                 return;
             }
 
-            _separator = value[0];      // Some sources say this should always be '?'. Others do however use '@' or other characters.
+            _separator = value[0];      // can be any special character but not white space symbol, letter or digit.
 
             DetectFieldCode(ref information);
         }
@@ -167,9 +157,8 @@ namespace programmersdigest.MT940Parser.Parsing
                     ReadRemittanceInformation(ref information);
                     break;
                 default:
-                    information.UnstructuredRemittanceInformation += " " + ReadValue();
+                    information.UnstructuredRemittanceInformation += ReadValue();
                     break;
-                    //    throw new InvalidDataException($"Unknown field code: {value}");
             }
 
             ReadSeparator(ref information);
@@ -205,8 +194,6 @@ namespace programmersdigest.MT940Parser.Parsing
                 }
                 else
                 {
-
-
                     information.UnstructuredRemittanceInformation += ReadValue();
                 }
             }
