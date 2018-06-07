@@ -595,35 +595,7 @@ namespace MT940ParserTests {
             }
         }
 
-        [TestMethod]
-        public void StatementParser_Field28CSecondPartTooLong_ShouldParse() {
-            var text = "\r\n" +
-                ":20:Transaction Ref\r\n" +
-                ":21:Related Ref\r\n" +
-                ":25:1234567890/1234567890\r\n" +
-                ":28C:12345/" + new string('1', 5 + 1) + "\r\n" +
-                ":60F:C180220EUR0,00\r\n" +
-                ":61:1802200220CR0,00NMSCCustomer Ref//Bank Ref\r\n" +
-                "Supplementary Details\r\n" +
-                ":86:Information\r\n" +
-                ":61:1802200220CR0,00NMSCCustomer Ref//Bank Ref\r\n" +
-                "Supplementary Details\r\n" +
-                ":86:Information\r\n" +
-                ":62F:C180220EUR0,00\r\n" +
-                ":64:C180220EUR0,00\r\n" +
-                ":65:C180220EUR0,00\r\n" +
-                ":65:C180220EUR0,00\r\n" +
-                ":86:Information\r\n" +
-                "-";
-
-            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(text)))
-            using (var reader = new StreamReader(stream)) {
-                var parser = new StatementParser(reader);
-                var statement = parser.ReadStatement();
-
-                Assert.AreEqual(111111, statement.SequenceNumber);
-            }
-        }
+        
 
         [TestMethod]
         public void StatementParser_Field86InLineTooLong_ShouldParse() {
@@ -1109,35 +1081,7 @@ namespace MT940ParserTests {
             }
         }
 
-        [TestMethod]
-        public void StatementParser_SingleCompleteStatement_ShouldParseField28CPart2() {
-            var text = "\r\n" +
-                ":20:Transaction Ref\r\n" +
-                ":21:Related Ref\r\n" +
-                ":25:1234567890/0987654321\r\n" +
-                ":28C:12345/54321\r\n" +
-                ":60F:C180220EUR0,00\r\n" +
-                ":61:1802220221CR1,00NRBTCustomer Ref 1//Bank Ref 1\r\n" +
-                "Supplementary Details 1\r\n" +
-                ":86:Line Information 1\r\n" +
-                ":61:1802240223DF2,00NMSCCustomer Ref 2//Bank Ref 2\r\n" +
-                "Supplementary Details 2\r\n" +
-                ":86:Line Information 2\r\n" +
-                ":62F:C180225EUR3,00\r\n" +
-                ":64:D180226EUR4,00\r\n" +
-                ":65:C180227EUR5,00\r\n" +
-                ":65:D180228EUR6,00\r\n" +
-                ":86:Statement Information\r\n" +
-                "-";
-
-            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(text)))
-            using (var reader = new StreamReader(stream)) {
-                var parser = new StatementParser(reader);
-                var statement = parser.ReadStatement();
-
-                Assert.AreEqual(54321, statement.SequenceNumber);
-            }
-        }
+      
         
         [TestMethod]
         public void StatementParser_SingleCompleteStatement_ShouldParseField60F() {

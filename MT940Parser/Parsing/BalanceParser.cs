@@ -61,7 +61,7 @@ namespace programmersdigest.MT940Parser.Parsing {
         }
 
         private void ReadAmount(ref Balance balance) {
-            var value = _reader.Read(15);
+            var value = _reader.ReadWhile(c => char.IsDigit(c) || c=='.' || c==',', 15);
             if (value.Length <= 0) {
                 throw new InvalidDataException("The balance data ended unexpectedly. Expected value Amount with a length of at least 1 decimal.");
             }
