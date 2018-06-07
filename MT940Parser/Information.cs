@@ -3,9 +3,15 @@
         public int TransactionCode { get; internal set; }
         public string PostingText { get; internal set; }
         public string JournalNumber { get; internal set; }
+        public string OperationDescription { get; internal set; } = "";
+        public System.DateTime UploadDate { get; internal set; }
+        public string ContragentName { get; internal set; } = "";
+        public string ContragentAddress { get; internal set; } = "";
         public string BankCodeOfPayer { get; internal set; }
+        public string AccountIDOfPayer { get; internal set; }
         public string AccountNumberOfPayer { get; internal set; }
         public string NameOfPayer { get; internal set; }
+        public string AddressOfPayer { get; internal set; }
         public int? TextKeyAddition { get; internal set; }
         public string EndToEndReference { get; internal set; }
         public string CustomerReference { get; internal set; }
@@ -17,9 +23,9 @@
         public string SepaRemittanceInformation { get; internal set; }
         public string PayersReferenceParty { get; internal set; }
         public string CreditorsReferenceParty { get; internal set; }
-        public string UnstructuredRemittanceInformation { get; internal set; }
+        public string UnstructuredRemittanceInformation { get; internal set; } 
 
         public bool IsUnstructuredData { get; internal set; }
-        public string UnstructuredData { get; internal set; }
+        public string UnstructuredData { get; internal set; } 
     }
 }

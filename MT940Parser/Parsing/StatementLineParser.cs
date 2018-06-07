@@ -15,7 +15,8 @@ namespace programmersdigest.MT940Parser.Parsing {
 
             var leftover = _reader.Peek();
             if (!string.IsNullOrEmpty(leftover)) {
-                throw new InvalidDataException($"Expected end of statement line. Data not read: {leftover}");
+                ReadSupplementaryDetails(ref statementLine);
+                //throw new InvalidDataException($"Expected end of statement line. Data not read: {leftover}");
             }
 
             return statementLine;
@@ -113,14 +114,17 @@ namespace programmersdigest.MT940Parser.Parsing {
 
         private void ReadTransactionTypeIdCode(ref StatementLine statementLine) {
             var constant = _reader.Read(1);
-            if (constant != "N") {
-                throw new InvalidDataException("The statement line contained unexpected data. Expected constant \"N\" before \"Transaction Type ID Code\".");
+            if (constant.Length <= 0)
+            {
+                return;     // End of buffer
             }
+ 
 
             // TODO Make enum with values from "DFÜ - Abkommen S. 436"
             var value = _reader.Read(3);
             if (value.Length < 3) {
-                throw new InvalidDataException("The statement line data ended unexpectedly. Expected \"Transaction Type ID Code\" with a length of three characters.");
+                return;
+                //throw new InvalidDataException("The statement line data ended unexpectedly. Expected \"Transaction Type ID Code\" with a length of three characters.");
             }
 
             statementLine.TransactionTypeIdCode = value;
@@ -138,7 +142,8 @@ namespace programmersdigest.MT940Parser.Parsing {
 
                 ReadBankReference(ref statementLine);
             }
-            else if (value.Contains("\r\n")) {
+            else if (value.Contains("\r\n"))
+            {
                 // value contains beginning of supplementary details.
                 // Remove it and read supplementary details.
                 var idx = value.IndexOf("\r\n");
@@ -146,7 +151,17 @@ namespace programmersdigest.MT940Parser.Parsing {
 
                 ReadSupplementaryDetails(ref statementLine);
             }
-            else {
+            else if (value.Contains("\n"))
+            {
+                // value contains beginning of supplementary details.
+                // Remove it and read supplementary details.
+                var idx = value.IndexOf("\n");
+                value = _reader.Read(idx);
+
+                ReadSupplementaryDetails(ref statementLine);
+            }
+            else
+            {
                 _reader.Skip(16);
             }
 
@@ -161,7 +176,7 @@ namespace programmersdigest.MT940Parser.Parsing {
         }
 
         private void ReadBankReference(ref StatementLine statementLine) {
-            var value = _reader.Peek(20);   // "//" + 16x + "\r\n"
+            var value = _reader.Peek(16);   // "//" + 16x + "\r\n"
             if (value.Length <= 0) {
                 return;     // End of buffer
             }
@@ -170,15 +185,25 @@ namespace programmersdigest.MT940Parser.Parsing {
                 throw new InvalidDataException($"Unexpected data found. Expected \"Bank Reference\". Actual {value}");
             }
 
-            if (value.Contains("\r\n")) {
+            if (value.Contains("\r\n"))
+            {
                 // value contains beginning of supplementary details - remove it.
                 var idx = value.IndexOf("\r\n");
                 value = _reader.Read(idx);
 
                 ReadSupplementaryDetails(ref statementLine);
             }
-            else {
-                _reader.Skip(18);
+            else if (value.Contains("\n"))
+            {
+                // value contains beginning of supplementary details - remove it.
+                var idx = value.IndexOf("\n");
+                value = _reader.Read(idx);
+
+                ReadSupplementaryDetails(ref statementLine);
+            }
+            else
+            {
+                _reader.Skip(16);
             }
 
             value = value.Substring(2);
@@ -196,11 +221,6 @@ namespace programmersdigest.MT940Parser.Parsing {
                 return;     // End of buffer
             }
 
-            if (!value.StartsWith("\r\n")) {
-                throw new InvalidDataException($"Unexpected data found. Expected \"Supplementary Details\". Actual {value}");
-            }
-
-            value = value.Substring(2);
             statementLine.SupplementaryDetails = value;
         }
     }
