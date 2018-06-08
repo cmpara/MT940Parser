@@ -6,7 +6,7 @@
         public string PostingText { get; internal set; }
         public string JournalNumber { get; internal set; }
         public string OperationDescription { get; internal set; } = "";
-        public System.DateTime UploadDate { get; internal set; }
+        public System.DateTime? UploadDate { get; internal set; }
         public string ContragentName { get; internal set; } = "";
         public string ContragentAddress { get; internal set; } = "";
         public string BankCodeOfPayer { get; internal set; }
