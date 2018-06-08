@@ -1,6 +1,28 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/github/programmersdigest/MT940Parser?branch=release&svg=true)](https://ci.appveyor.com/api/projects/status/github/programmersdigest/MT940Parser?branch=release&svg=true)
 # MT940Parser
 A parser for the SWIFT MT940/MT942 format
+# Changes in this fork:
+1.Added support of encodings (default - utf-8-BOM) when parsing the file: ```string path="some_path"; string encoding="windows-1250"; var parser = new Parser(path, encoding);```
+
+2.Added convertion of line termination symbols to CRLF, CRLF removed from string search (reader.ReadTo, reader.Find)
+
+3.Added Trim and multispace delition to avoid excessive whitespace characters in field values
+
+4.Added support of specific non digit subfields in :86: field and custom separator (any special character or none, if none all field is added into information.operationDescription)
+
+5.Unstructured data removed from information.cs, format detection removed, all data in :86: is considered to be structured with identification of subfields
+
+6.Added more subfields into additionalInfo parser for :86: field
+
+7.Structure of MT940 can be now more flexible, some less important fields can be skipped and not considered to be mandatory
+
+8.Sequence number is deleted, due to :28C: can contain not only integers but also separators (more than 1) - it is better to keep field as string
+
+9.Added new fields to infromation, statement and other classes to get more information from :86: and :61: fields
+
+10.Amount parser is improved to handle variable number of digits and separators (. or ,) length up to 15 in total, culture invariant
+
+11.Date parser is improved to use native DateTime.TryParseExact with specified multiple possible date time string formats (8 and 6 digit dates yyyyMMdd yyMMdd), culture invariant
 
 ## Description
 This project implements a parser for the *SWIFT MT940* and *MT942* formats used for electronic banking (e.g. for electronic statements). The result is parsed into a developer friendly object model for further processing or storing.
